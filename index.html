@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Amita:wght@400;700&family=Charm:wght@400;700&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Kalnia+Glaze:wght@100..700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=PT+Sans+Narrow:wght@400;700&family=Roboto+Slab:wght@100..900&family=Sansita:ital,wght@0,400;0,700;0,800;0,900;1,400;1,700;1,800;1,900&family=Teko:wght@300..700&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+        body {
+            font-family: "Charm", cursive;
+            background-color:gray;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            background: linear-gradient(to bottom, #68d2c9 0%, #272a2b 100%);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 10px 5px 10px 10px rgba(0,1,0,0.1);
+        }
+
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .forecast {
+            margin-top: 20px;
+        }
+
+        .forecast-day {
+            background:aqua;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 5px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .forecast-day img {
+            width: 60px;
+            height: 60px;
+            border: 1px solid black;
+            border-radius: 50%;
+        }
+
+        .forecast-day p {
+            margin: 0;
+        }
+        .oneDay{
+            color: black;
+            background-color: cadetblue;
+            padding: 5px;
+            margin: 5px;
+            border: 1px solid black;
+            border-radius: 10px;
+            box-shadow: 5px 5px 5px 5px rgba(0.1, 0, 0.5, 0.6);
+        }
+        .oneDay h3{
+            text-align: center;
+            font-weight: bold;
+            color: crimson;
+        }
+        .oneDay h4{
+            text-align: center;
+            font-weight: bold;
+            color: rgb(149, 13, 223);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Weather Forecast</h1>
+        <input type="text" id="input" placeholder="Enter a Valid City Name...">
+        <button id="btn">Get Forecast</button>
+        <div id="forecast" class="forecast"></div>
+        <div id="error-message" class="error-message" style="display: none;">City not found. Please try another city.</div>
+    </div>
+
+    <script>
+        document.getElementById("btn").addEventListener('click', function() {
+            const cityValue = document.getElementById('input').value;
+            const apiKey = '581d0ce2a59e327160e6f0a4523bd092';
+            const url = `https://api.openweathermap.org/data/2.5/forecast?q=${cityValue}&cnt=14&appid=${apiKey}&units=metric`;
+
+            fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+                if (data.cod === '404') {
+                    document.getElementById('error-message').style.display = 'block';
+                    document.getElementById('forecast').innerHTML = '';
+                } else {
+                    document.getElementById('error-message').style.display = 'none';
+                    document.getElementById('forecast').innerHTML = ''; 
+
+                    const sunriseTime = new Date(data.city.sunrise * 1000).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+                    const sunsetTime = new Date(data.city.sunset * 1000).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+
+                    for (let i = 0; i < data.list.length; i++) {
+                        const iconUrl = `https://openweathermap.org/img/wn/${data.list[i].weather[0].icon}@2x.png`;
+                        const forecastDiv = document.getElementById('forecast');
+
+                        const dateTime = new Date(data.list[i].dt_txt);
+                        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                        const formattedDate = dateTime.toLocaleDateString(undefined, options);
+                        const formattedTime = dateTime.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+                        const divNew = document.createElement('div');
+                        divNew.className = 'oneDay';
+                        divNew.innerHTML = `
+                            <p><strong>${formattedDate}</strong> | ${formattedTime}</p>
+                            <img src="${iconUrl}" alt="Weather Pic">
+                            <h3>${data.list[i].weather[0].main}</h3>
+                            <h4>${data.list[i].main.temp.toFixed(1)}ºC</h4>
+                            <p><b>T<sub>max:</b> ${data.list[i].main.temp_max}ºC</sub> | <b>T<sub>min:</b> ${data.list[i].main.temp_min}ºC</sub></p>
+                            <p><b>Sunrise:</b> ${sunriseTime} | <b>Sunset:</b> ${sunsetTime}</p>
+                        `;
+                        forecastDiv.appendChild(divNew);
+                    }
+                }
+            })
+            .catch(error => {
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('forecast').innerHTML = '';
+            });
+        });
+    </script>
+</body>
+</html>
